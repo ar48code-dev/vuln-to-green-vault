@@ -1,34 +1,79 @@
-/**
- * Green Routes — Carbon footprint and sustainability endpoints
- */
-
+// FILE: src/routes/green.js
 const express = require('express');
 const router = express.Router();
-const liveCarbonService = require('../services/liveCarbon');
+const liveCarbon = require('../services/live-carbon');
 const greenOptimizer = require('../scanners/green');
 
-// Get all green GCP regions ranked by carbon intensity
 router.get('/regions', async (req, res) => {
   try {
-    const forceRefresh = req.query.refresh === 'true';
-    const data = await liveCarbonService.getAllRegions(forceRefresh);
-    
+    if (req.query.refresh === 'true') {
+      liveCarbon.clearCache();
+    }
+    const data = await liveCarbon.getAllRegionsLive();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/regions/:regionId', async (req, res) => {
+  try {
+    const data = await liveCarbon.getCarbonForRegion(req.params.regionId);
+    if (!data) return res.status(404).json({ error: 'Region not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/sources', (req, res) => {
+  res.json(liveCarbon.getSourceStatus());
+});
+
+router.get('/cache', (req, res) => {
+  res.json(liveCarbon.getCacheStatus());
+});
+
+router.post('/cache/clear', (req, res) => {
+  liveCarbon.clearCache();
+  res.json({ success: true, message: 'Cache cleared' });
+});
+
+router.get('/compare', async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    if (!from || !to) return res.status(400).json({ error: 'Provide from and to region query params' });
+
+    const [fromData, toData] = await Promise.all([
+      liveCarbon.getCarbonForRegion(from),
+      liveCarbon.getCarbonForRegion(to)
+    ]);
+
+    if (!fromData) return res.status(404).json({ error: `Region ${from} not found` });
+    if (!toData) return res.status(404).json({ error: `Region ${to} not found` });
+
+    const carbonDiff = fromData.carbon - toData.carbon;
+    const avgMonthlyKwh = 100;
+    const savingsKg = (carbonDiff * avgMonthlyKwh) / 1000;
+    const treesEquivalent = Math.round((savingsKg * 12) / 22 * 10) / 10;
+
     res.json({
-      ...data,
-      greenest: data.regions.slice(0, 5),
-      dirtiest: data.regions.slice(-5).reverse()
+      from: { region: from, carbon: fromData.carbon, name: fromData.regionName },
+      to: { region: to, carbon: toData.carbon, name: toData.regionName },
+      carbonDiff,
+      savingsKg: Math.round(savingsKg * 100) / 100,
+      treesEquivalent,
+      isGreener: carbonDiff > 0
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Analyze a Dockerfile
 router.post('/docker', (req, res) => {
   try {
     const { content } = req.body;
     if (!content) return res.status(400).json({ error: 'Provide Dockerfile content' });
-
     const findings = greenOptimizer.analyzeDockerfile(content);
     res.json({ totalFindings: findings.length, findings });
   } catch (err) {
@@ -36,12 +81,10 @@ router.post('/docker', (req, res) => {
   }
 });
 
-// Analyze region config
 router.post('/region', (req, res) => {
   try {
     const { content, filename = 'config.yml' } = req.body;
     if (!content) return res.status(400).json({ error: 'Provide config content' });
-
     const findings = greenOptimizer.analyzeRegion(content, filename);
     res.json({ totalFindings: findings.length, findings });
   } catch (err) {
@@ -49,47 +92,15 @@ router.post('/region', (req, res) => {
   }
 });
 
-// Calculate carbon impact
 router.post('/impact', (req, res) => {
   try {
     const { findings } = req.body;
-    if (!findings || !Array.isArray(findings)) {
-      return res.status(400).json({ error: 'Provide findings array' });
-    }
-
+    if (!findings || !Array.isArray(findings)) return res.status(400).json({ error: 'Provide findings array' });
     const impact = greenOptimizer.calculateCarbonImpact(findings);
     res.json(impact);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-// Compare two regions
-router.get('/compare', (req, res) => {
-  const { from, to } = req.query;
-  if (!from || !to) return res.status(400).json({ error: 'Provide from and to region query params' });
-
-  const regions = greenOptimizer.gcpRegions;
-  const fromInfo = regions[from];
-  const toInfo = regions[to];
-
-  if (!fromInfo) return res.status(404).json({ error: `Region ${from} not found` });
-  if (!toInfo) return res.status(404).json({ error: `Region ${to} not found` });
-
-  const carbonDiff = fromInfo.carbon - toInfo.carbon;
-  const avgMonthlyKwh = 100;
-  const monthlySavingKg = (carbonDiff * avgMonthlyKwh) / 1000;
-
-  res.json({
-    from: { region: from, ...fromInfo },
-    to: { region: to, ...toInfo },
-    carbonDifference: carbonDiff,
-    carbonReductionPercent: Math.round((carbonDiff / fromInfo.carbon) * 100),
-    monthlySavingKg: Math.round(monthlySavingKg * 100) / 100,
-    yearlySavingKg: Math.round(monthlySavingKg * 12 * 100) / 100,
-    treesEquivalent: Math.round((monthlySavingKg * 12) / 22 * 10) / 10,
-    isGreener: carbonDiff > 0
-  });
 });
 
 module.exports = router;
