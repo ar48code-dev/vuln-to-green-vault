@@ -1,0 +1,46 @@
+{
+  "tools": [
+    {
+      "name": "fetch_vulnerabilities",
+      "description": "Retrieves security vulnerabilities from the GitLab project. Use this to identify what needs fixing.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_secure_fix",
+      "description": "Creates a new branch and commits a security fix. Use this after the AI has generated a patch.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "branch_name": { "type": "string", "description": "Name of the new branch, e.g., 'fix/security-vuln-123'" },
+          "commit_message": { "type": "string", "description": "Descriptive message about the fix." },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "action": { "type": "string", "enum": ["create", "update", "delete"] },
+                "file_path": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            }
+          }
+        },
+        "required": ["branch_name", "commit_message", "actions"]
+      }
+    },
+    {
+      "name": "audit_carbon_impact",
+      "description": "Uses Google Cloud Vertex AI to check if the proposed code or infrastructure change is energy efficient.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "config_content": { "type": "string", "description": "The content of the .gitlab-ci.yml or terraform file to audit." }
+        },
+        "required": ["config_content"]
+      }
+    }
+  ]
+}

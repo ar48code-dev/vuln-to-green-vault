@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vuln-to-Green Vault — Autonomous AI agent for security vulnerability detection and green optimization of GitLab repositories">
+  <title>Vuln-to-Green Vault — Security & Sustainability</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">🛡️</div>
+          <div class="logo-text">
+            <h1>Vuln-to-Green</h1>
+            <span>Security × Sustainability</span>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Dashboard</div>
+          <div class="nav-item active" data-page="dashboard">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" data-page="scan">
+            <span class="nav-icon">🔍</span>
+            <span>Run Scan</span>
+          </div>
+          <div class="nav-item" data-page="history">
+            <span class="nav-icon">📜</span>
+            <span>Scan History</span>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Analysis</div>
+          <div class="nav-item" data-page="security">
+            <span class="nav-icon">🔒</span>
+            <span>Security</span>
+            <span class="nav-badge" id="securityBadge" style="display:none">0</span>
+          </div>
+          <div class="nav-item" data-page="green">
+            <span class="nav-icon">🌱</span>
+            <span>Green Score</span>
+            <span class="nav-badge green" id="greenBadge" style="display:none">0</span>
+          </div>
+          <div class="nav-item" data-page="regions">
+            <span class="nav-icon">🌍</span>
+            <span>Region Explorer</span>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Integration</div>
+          <div class="nav-item" data-page="gitlab">
+            <span class="nav-icon">🦊</span>
+            <span>GitLab</span>
+          </div>
+          <div class="nav-item" data-page="report">
+            <span class="nav-icon">📄</span>
+            <span>Report</span>
+          </div>
+          <div class="nav-item" data-page="rules">
+            <span class="nav-icon">📏</span>
+            <span>Scan Rules</span>
+          </div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="gitlab-status" id="gitlabStatusBar">
+          <span class="status-dot disconnected" id="statusDot"></span>
+          <span id="statusText">Checking GitLab...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <button class="btn btn-ghost btn-sm" id="menuToggle" style="display:none">☰</button>
+          <h2 class="page-title" id="pageTitle">Overview</h2>
+        </div>
+        <div class="top-bar-right">
+          <button class="btn btn-primary" id="runScanBtn" onclick="runFullScan()">
+            🔍 Run Full Scan
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="openConfigModal()">⚙️ Config</button>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- ═══ DASHBOARD PAGE ═══ -->
+        <section class="page-section active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-header">
+                <span class="stat-label">Total Scans</span>
+                <div class="stat-icon">🔍</div>
+              </div>
+              <div class="stat-value" id="totalScans">0</div>
+              <div class="stat-change">since deployment</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-header">
+                <span class="stat-label">Vulnerabilities</span>
+                <div class="stat-icon">🛡️</div>
+              </div>
+              <div class="stat-value" id="totalVulns">0</div>
+              <div class="stat-change">last scan</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-header">
+                <span class="stat-label">Green Score</span>
+                <div class="stat-icon">🌱</div>
+              </div>
+              <div class="stat-value" id="greenOptCount">0</div>
+              <div class="stat-change">optimizations found</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-header">
+                <span class="stat-label">CO₂ Saved</span>
+                <div class="stat-icon">🌳</div>
+              </div>
+              <div class="stat-value" id="co2Saved">0</div>
+              <div class="stat-change">kg CO₂/month</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-header">
+                <span class="stat-label">Cost Saved</span>
+                <div class="stat-icon">💰</div>
+              </div>
+              <div class="stat-value" id="costSaved">$0</div>
+              <div class="stat-change">per month</div>
+            </div>
+            <div class="stat-card cyan">
+              <div class="stat-header">
+                <span class="stat-label">Files Scanned</span>
+                <div class="stat-icon">📂</div>
+              </div>
+              <div class="stat-value" id="filesScanned">0</div>
+              <div class="stat-change">last scan</div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🔴 Severity Distribution</div>
+              </div>
+              <div class="card-body">
+                <div id="severityChart">
+                  <div class="severity-bar" id="severityBar"></div>
+                  <div class="severity-legend" id="severityLegend"></div>
+                </div>
+                <div class="empty-state" id="noSecurityData">
+                  <div class="empty-state-icon">🔒</div>
+                  <div class="empty-state-title">No Scan Data</div>
+                  <div class="empty-state-desc">Run a scan to see vulnerability distribution</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🌱 Impact Summary</div>
+              </div>
+              <div class="card-body">
+                <div class="impact-grid" id="impactGrid">
+                  <div class="impact-card">
+                    <div class="impact-icon">🌳</div>
+                    <div class="impact-value" id="impactTrees">0</div>
+                    <div class="impact-label">Trees Equivalent</div>
+                  </div>
+                  <div class="impact-card">
+                    <div class="impact-icon">⚡</div>
+                    <div class="impact-value" id="impactEnergy">0</div>
+                    <div class="impact-label">kWh Saved/Month</div>
+                  </div>
+                  <div class="impact-card">
+                    <div class="impact-icon">📉</div>
+                    <div class="impact-value" id="impactPerf">0%</div>
+                    <div class="impact-label">Faster Deploy</div>
+                  </div>
+                  <div class="impact-card">
+                    <div class="impact-icon">🌍</div>
+                    <div class="impact-value" id="impactYearly">0</div>
+                    <div class="impact-label">kg CO₂/Year</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📜 Recent Scans</div>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('history')">View All →</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <table class="history-table" id="recentScansTable">
+                <thead>
+                  <tr>
+                    <th>Scan ID</th>
+                    <th>Status</th>
+                    <th>Trigger</th>
+                    <th>Vulnerabilities</th>
+                    <th>Optimizations</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="recentScansBody">
+                  <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">No scans yet. Run your first scan!</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ SCAN PAGE ═══ -->
+        <section class="page-section" id="page-scan">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title">🔍 Scan Options</div>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="runFullScan()">
+                  🦊 Full GitLab Scan
+                </button>
+                <button class="btn btn-green" id="scanCodeBtn" onclick="scanDirectCode()">
+                  📝 Scan Code Below
+                </button>
+              </div>
+              <p style="margin-top:12px;font-size:0.82rem;color:var(--text-muted)">
+                <strong>Full GitLab Scan:</strong> Connects to your configured GitLab project, fetches all source files, and runs both security + green analysis.<br>
+                <strong>Scan Code Below:</strong> Paste code directly and scan it — no GitLab needed.
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📝 Direct Code Scanner</div>
+            </div>
+            <div class="card-body">
+              <div class="code-editor-container">
+                <div class="code-editor-header">
+                  <div class="code-filename">
+                    <span>📄 Filename:</span>
+                    <input type="text" id="codeFilename" value="app.js" placeholder="e.g. server.js, Dockerfile">
+                  </div>
+                </div>
+                <textarea class="code-editor" id="codeEditor" placeholder="Paste your code here to scan for vulnerabilities and green optimizations...
+
+Example vulnerable code:
+const result = db.query(`SELECT * FROM users WHERE id = ${req.params.id}`);
+app.post('/admin/delete', async (req, res) => { ... });
+const apiKey = &quot;sk-abc123456789abcdef&quot;;">// Paste your code here or use this example
+
+const express = require('express');
+const app = express();
+const db = require('./db');
+
+// 🔴 SQL Injection vulnerability
+app.get('/users/:id', async (req, res) => {
+  const result = await db.query(`SELECT * FROM users WHERE id = ${req.params.id}`);
+  res.json(result);
+});
+
+// 🔴 Hardcoded API key
+const apiKey = "sk-live-abc123456789abcdef0123456789";
+
+// 🔴 XSS vulnerability
+app.get('/search', (req, res) => {
+  res.send(`&lt;h1&gt;Results for: ${req.query.q}&lt;/h1&gt;`);
+});
+
+// 🔴 Command injection
+const { exec } = require('child_process');
+app.post('/deploy', (req, res) => {
+  exec(`deploy.sh ${req.body.env}`);
+});
+
+// 🟡 Weak JWT secret
+const jwt = require('jsonwebtoken');
+const token = jwt.sign({ userId: 1 }, "secret123");
+</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="scanResults" style="display:none;margin-top:20px">
+            <div class="card-header">
+              <div class="card-title">📊 Scan Results</div>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('report')">View Full Report →</button>
+            </div>
+            <div class="card-body" id="scanResultsBody"></div>
+          </div>
+        </section>
+
+        <!-- ═══ SECURITY PAGE ═══ -->
+        <section class="page-section" id="page-security">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🔒 Security Vulnerabilities</div>
+              <span id="securityCount" style="font-size:0.85rem;color:var(--text-muted)"></span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <ul class="vuln-list" id="vulnList">
+                <li class="vuln-item">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">🔒</div>
+                    <div class="empty-state-title">No Vulnerabilities Found</div>
+                    <div class="empty-state-desc">Run a scan to detect security issues in your codebase</div>
+                    <button class="btn btn-primary" onclick="navigateTo('scan')">Run Scan</button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ GREEN PAGE ═══ -->
+        <section class="page-section" id="page-green">
+          <div class="stats-grid" id="greenStatsGrid"></div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🐳 Docker Optimizations</div>
+              </div>
+              <div class="card-body" style="padding:0" id="dockerOptList">
+                <div class="empty-state">
+                  <div class="empty-state-icon">🐳</div>
+                  <div class="empty-state-title">No Docker Optimizations</div>
+                  <div class="empty-state-desc">Run a scan to analyze Dockerfiles</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🌍 Region Optimizations</div>
+              </div>
+              <div class="card-body" style="padding:0" id="regionOptList">
+                <div class="empty-state">
+                  <div class="empty-state-icon">🌍</div>
+                  <div class="empty-state-title">No Region Optimizations</div>
+                  <div class="empty-state-desc">Run a scan to analyze infrastructure configs</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⚡ Code Efficiency</div>
+            </div>
+            <div class="card-body" style="padding:0" id="codeOptList">
+              <div class="empty-state">
+                <div class="empty-state-icon">⚡</div>
+                <div class="empty-state-title">No Code Efficiency Issues</div>
+                <div class="empty-state-desc">Run a scan to detect inefficient code patterns</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ REGIONS PAGE ═══ -->
+        <section class="page-section" id="page-regions">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🌍 GCP Region Carbon Explorer</div>
+              <span style="font-size:0.8rem;color:var(--text-muted)">Real carbon intensity data (gCO₂eq/kWh)</span>
+            </div>
+            
+            <div id="regionsBanner" style="padding:10px 22px;font-size:0.8rem;border-bottom:1px solid var(--border-default);border-radius:var(--radius-sm);margin-bottom:12px">
+              Loading carbon data...
+            </div>
+            <button onclick="loadRegions(true)" class="btn btn-ghost btn-sm" style="margin:0 22px 12px">🔄 Refresh Live Data</button>
+
+            <div class="region-grid" id="regionGrid">
+              <div style="text-align:center;padding:40px;color:var(--text-muted);grid-column:1/-1">
+                <div class="spinner spinner-lg" style="border-top-color:var(--accent-blue)"></div>
+                <p style="margin-top:12px">Loading regions...</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ GITLAB PAGE ═══ -->
+        <section class="page-section" id="page-gitlab">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title">🦊 GitLab Connection</div>
+              <button class="btn btn-ghost btn-sm" onclick="openConfigModal()">⚙️ Configure</button>
+            </div>
+            <div class="card-body" id="gitlabInfo">
+              <div class="empty-state">
+                <div class="empty-state-icon">🦊</div>
+                <div class="empty-state-title">GitLab Not Connected</div>
+                <div class="empty-state-desc">Configure your GitLab token and project ID to connect</div>
+                <button class="btn btn-primary" onclick="openConfigModal()">Configure GitLab</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">📂 Repository Files</div>
+                <button class="btn btn-ghost btn-sm" onclick="loadRepoTree()">Refresh</button>
+              </div>
+              <div class="card-body" style="padding:0" id="repoTree">
+                <div style="padding:20px;color:var(--text-muted);text-align:center;font-size:0.85rem">
+                  Connect to GitLab to browse files
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">📋 Merge Requests</div>
+                <button class="btn btn-ghost btn-sm" onclick="loadMergeRequests()">Refresh</button>
+              </div>
+              <div class="card-body" style="padding:0" id="mrList">
+                <div style="padding:20px;color:var(--text-muted);text-align:center;font-size:0.85rem">
+                  Connect to GitLab to view MRs
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ REPORT PAGE ═══ -->
+        <section class="page-section" id="page-report">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📄 Latest Analysis Report</div>
+              <div>
+                <button class="btn btn-green btn-sm" onclick="createMR()">📝 Create GitLab MR</button>
+                <button class="btn btn-ghost btn-sm" onclick="copyReport()" style="margin-left:8px">📋 Copy</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="report-container" id="reportContainer">
+                <div class="empty-state">
+                  <div class="empty-state-icon">📄</div>
+                  <div class="empty-state-title">No Report Available</div>
+                  <div class="empty-state-desc">Run a scan to generate an analysis report</div>
+                  <button class="btn btn-primary" onclick="navigateTo('scan')">Run Scan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ HISTORY PAGE ═══ -->
+        <section class="page-section" id="page-history">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📜 Scan History</div>
+              <span id="historyCount" style="font-size:0.85rem;color:var(--text-muted)"></span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Scan ID</th>
+                    <th>Status</th>
+                    <th>Trigger</th>
+                    <th>Vulnerabilities</th>
+                    <th>Optimizations</th>
+                    <th>Duration</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody">
+                  <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">No scan history yet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ RULES PAGE ═══ -->
+        <section class="page-section" id="page-rules">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📏 Security Scan Rules</div>
+              <span id="rulesCount" style="font-size:0.85rem;color:var(--text-muted)"></span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <ul class="vuln-list" id="rulesList">
+                <li style="padding:30px;text-align:center;color:var(--text-muted)">Loading rules...</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ CONFIG MODAL ═══ -->
+  <div class="modal-overlay" id="configModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ GitLab Configuration</div>
+        <button class="modal-close" onclick="closeConfigModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">GitLab URL</label>
+          <input type="text" class="form-input" id="configGitlabUrl" placeholder="https://gitlab.com">
+          <div class="form-hint">Your GitLab instance URL (default: https://gitlab.com)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Personal Access Token</label>
+          <input type="password" class="form-input" id="configToken" placeholder="glpat-xxxxxxxxxxxxxxxxxxxx">
+          <div class="form-hint">Create at GitLab → Settings → Access Tokens. Needs api scope.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project ID</label>
+          <input type="text" class="form-input" id="configProjectId" placeholder="12345678">
+          <div class="form-hint">Find at your project → Settings → General → Project ID</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeConfigModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveConfig()">💾 Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCANNING OVERLAY ═══ -->
+  <div class="scanning-overlay" id="scanningOverlay">
+    <div class="spinner spinner-lg" style="border-top-color:var(--accent-blue)"></div>
+    <div class="scanning-text" id="scanningText">Scanning repository...</div>
+    <div class="scanning-sub" id="scanningSub">Fetching files from GitLab and analyzing for vulnerabilities + green optimizations</div>
+  </div>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
