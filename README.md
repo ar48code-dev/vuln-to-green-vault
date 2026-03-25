@@ -11,7 +11,7 @@
 🛡️🌱 Vuln-to-Green Vault — GitLab Hackathon submission
 Real working app for GitLab security + sustainability agent:
 
-✅ **AI Orchestrator** — Powered by Anthropic Claude 3.5 & Google Cloud Vertex AI
+✅ **AI Orchestrator** — Powered by Anthropic Claude 4.6 & Google Cloud Vertex AI
 ✅ **Automatic Remediation** — AI generates secure fixes and creates GitLab Merge Requests
 ✅ **Sustainability Auditor** — Vertex AI powered auditing of carbon impact and cost
 ✅ **Security Scanner** — 20+ rules (SQLi, XSS, secrets, cmd injection, etc.)
@@ -56,7 +56,7 @@ Once the dashboard opens:
 | `GITLAB_URL` | No | GitLab instance URL (default: `https://gitlab.com`) |
 | `GITLAB_TOKEN` | For GitLab scans | Personal access token with `api` scope |
 | `GITLAB_PROJECT_ID` | For GitLab scans | Your project's numeric ID |
-| `ANTHROPIC_API_KEY` | For AI Fixes | Claude 3.5 Sonnet API key |
+| `ANTHROPIC_API_KEY` | For AI Fixes | Claude 4.6 Sonnet API key |
 | `GOOGLE_CLOUD_PROJECT` | For Green AI | GCP Project ID for Vertex AI |
 | `NVD_API_KEY` | No | NVD API key for CVE lookups |
 | `ELECTRICITY_MAPS_API_KEY` | No | For live carbon data (optional) |
@@ -80,7 +80,7 @@ vuln-to-green-vault/
 │   │   ├── scan.js          # Scan triggers + CVE lookups
 │   │   └── green.js         # Carbon footprint + region data
 │   ├── services/
-│   │   ├── anthropic.js     # Anthropic Claude 3.5 integration
+│   │   ├── anthropic.js     # Anthropic Claude 4.6 integration
 │   │   ├── googleCloud.js   # Vertex AI Sustainability Auditor
 │   │   ├── gitlab.js        # GitLab API v4 client
 │   │   ├── cve.js           # NVD CVE lookup service

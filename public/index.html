@@ -531,6 +531,26 @@ const token = jwt.sign({ userId: 1 }, "secret123");
           <input type="text" class="form-input" id="configProjectId" placeholder="12345678">
           <div class="form-hint">Find at your project → Settings → General → Project ID</div>
         </div>
+        <div class="form-group">
+          <label class="form-label">Anthropic API Key</label>
+          <input type="password" class="form-input" id="configAnthropicKey" placeholder="sk-ant-...">
+          <div class="form-hint">Optional: For AI fixes</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Google API Key</label>
+          <input type="password" class="form-input" id="configGoogleKey" placeholder="...">
+          <div class="form-hint">Optional: For Gemini insights</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">NVD API Key</label>
+          <input type="password" class="form-input" id="configNvdKey" placeholder="...">
+          <div class="form-hint">Optional: For CVE lookups</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Electricity Maps API Key</label>
+          <input type="password" class="form-input" id="configElectricityKey" placeholder="...">
+          <div class="form-hint">Optional: For live carbon data</div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeConfigModal()">Cancel</button>

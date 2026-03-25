@@ -413,11 +413,11 @@ async function loadRegions(forceRefresh = false) {
     const liveCount = data.liveRegions || 0;
     if (banner) {
       if (liveCount > 0) {
-        banner.innerHTML = `<span style="color:var(--accent-green)">🟢 LIVE</span> — ${liveCount}/${data.totalRegions} regions have live data · Updated ${new Date().toLocaleTimeString()} · Source: ${data.sources?.join(', ') || 'Various'}`;
+        banner.innerHTML = `<span style="color:var(--accent-green)">🟢 LIVE</span> — Real-time carbon data active`;
         banner.className = 'banner-live';
         banner.style.color = 'var(--accent-green)';
       } else {
-        banner.innerHTML = `<span style="color:var(--accent-yellow)">📅 2024 Baseline</span> — Add ELECTRICITY_MAPS_API_KEY to .env for live data`;
+        banner.innerHTML = `<span style="color:var(--accent-yellow)">Add ELECTRICITY_MAPS_API_KEY to .env for live data</span>`;
         banner.className = 'banner-baseline';
         banner.style.color = 'var(--accent-yellow)';
       }
@@ -436,7 +436,7 @@ function renderRegions(regions) {
     const carbonColor = r.carbon < 100 ? 'var(--accent-green)' : r.carbon < 300 ? 'var(--accent-yellow)' : 'var(--accent-red)';
     const liveBadge = r.liveData 
       ? `<span class="badge-live">🟢 LIVE</span>`
-      : `<span class="badge-baseline">📅 2024</span>`;
+      : ``;
     const freshness = r.fetchedAt 
       ? `<div class="freshness-text">Updated: ${new Date(r.fetchedAt).toLocaleTimeString()}</div>`
       : '';
@@ -515,7 +515,14 @@ async function saveConfig() {
   const url = document.getElementById('configGitlabUrl').value.trim();
   const token = document.getElementById('configToken').value.trim();
   const projectId = document.getElementById('configProjectId').value.trim();
-  await apiFetch('/api/gitlab/config', { method: 'POST', body: JSON.stringify({ gitlabUrl: url, token, projectId }) });
+  const anthropicKey = document.getElementById('configAnthropicKey') ? document.getElementById('configAnthropicKey').value.trim() : '';
+  const googleKey = document.getElementById('configGoogleKey') ? document.getElementById('configGoogleKey').value.trim() : '';
+  const nvdKey = document.getElementById('configNvdKey') ? document.getElementById('configNvdKey').value.trim() : '';
+  const electricityKey = document.getElementById('configElectricityKey') ? document.getElementById('configElectricityKey').value.trim() : '';
+  await apiFetch('/api/gitlab/config', { 
+    method: 'POST', 
+    body: JSON.stringify({ gitlabUrl: url, token, projectId, anthropicKey, googleKey, nvdKey, electricityKey }) 
+  });
   closeConfigModal();
   checkGitLabStatus();
 }

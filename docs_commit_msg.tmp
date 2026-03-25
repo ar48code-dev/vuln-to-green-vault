@@ -1,0 +1,10 @@
+🛡️🌱 Vuln-to-Green Vault v1.0
+
+Autonomous AI agent for security vulnerability detection and green optimization of GitLab repositories.
+
+- 20+ security rules: SQL injection, XSS, CSRF, secrets, command injection
+- Live carbon data: Electricity Maps + CO2Signal + WattTime + UK Carbon API
+- Claude AI: vulnerability analysis, code fixes, MR description writing
+- Gemini AI: infrastructure recommendations, green scoring
+- GitLab API v4: auto-branch detection, automated MR creation
+- 33 GCP regions with real-time carbon intensity data

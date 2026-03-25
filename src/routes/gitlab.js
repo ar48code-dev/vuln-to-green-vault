@@ -127,11 +127,15 @@ router.get('/vulnerabilities', async (req, res) => {
 
 // Update GitLab config (dynamically reinitialize the singleton)
 router.post('/config', (req, res) => {
-  const { gitlabUrl, token, projectId } = req.body;
+  const { gitlabUrl, token, projectId, anthropicKey, googleKey, nvdKey, electricityKey } = req.body;
 
   if (gitlabUrl) process.env.GITLAB_URL = gitlabUrl;
   if (token) process.env.GITLAB_TOKEN = token;
   if (projectId) process.env.GITLAB_PROJECT_ID = projectId;
+  if (anthropicKey) process.env.ANTHROPIC_API_KEY = anthropicKey;
+  if (googleKey) process.env.GOOGLE_API_KEY = googleKey;
+  if (nvdKey) process.env.NVD_API_KEY = nvdKey;
+  if (electricityKey) process.env.ELECTRICITY_MAPS_API_KEY = electricityKey;
 
   // Reinitialize the axios client and credentials on the singleton
   const axios = require('axios');
