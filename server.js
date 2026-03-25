@@ -43,7 +43,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'operational',
     service: 'Vuln-to-Green Vault',
-    version: '1.0.0',
+    version: '1.0',
     timestamp: new Date().toISOString(),
     gitlabConfigured: !!process.env.GITLAB_TOKEN && process.env.GITLAB_TOKEN !== 'your-gitlab-personal-access-token',
     uptime: process.uptime()

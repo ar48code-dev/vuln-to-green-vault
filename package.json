@@ -1,6 +1,6 @@
 {
   "name": "vuln-to-green-vault",
-  "version": "1.0.0",
+  "version": "1.0",
   "description": "Autonomous AI agent for security vulnerability detection + green optimization of GitLab repositories",
   "main": "server.js",
   "scripts": {
