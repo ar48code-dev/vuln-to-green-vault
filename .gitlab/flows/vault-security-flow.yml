@@ -1,0 +1,108 @@
+# .gitlab/flows/vault-security-flow.yml
+# GitLab Duo Agent Platform — Custom Flow
+# This orchestrates the full Vuln-to-Green workflow
+# Triggered by: issue mention, MR comment "/vault-scan", or push to main
+
+name: vault-security-flow
+description: "Full security scan + green optimization workflow using Claude + Gemini"
+
+# What starts this flow
+triggers:
+  - type: mention
+    agent: vuln-to-green-vault
+  - type: issue_comment
+    keyword: "/vault-scan"
+  - type: merge_request_comment  
+    keyword: "/vault-scan"
+
+# The steps the flow executes in order
+steps:
+  - name: acknowledge
+    agent: vuln-to-green-vault
+    prompt: |
+      The user has triggered a Vuln-to-Green scan. 
+      Acknowledge that you are starting the scan and list what you will do:
+      1. Scan all code files for security vulnerabilities  
+      2. Check infrastructure for green optimization opportunities
+      3. Generate a full report with fixes
+      4. Create a merge request if issues are found
+      Keep acknowledgment brief and friendly.
+
+  - name: security_scan
+    agent: vuln-to-green-vault
+    prompt: |
+      Use the list_files and read_file tools to scan ALL JavaScript, 
+      TypeScript, Python, Ruby, PHP, and Java files in this repository
+      for security vulnerabilities.
+      
+      Look for:
+      - SQL Injection (string concatenation in queries)
+      - XSS (unescaped user input in HTML)
+      - Command Injection (exec/system with user input)
+      - Hardcoded secrets (API keys, passwords in code)
+      - Missing CSRF protection on POST/PUT/DELETE endpoints
+      - Weak JWT secrets
+      - Insecure deserialization
+      - Path traversal vulnerabilities
+      - Weak cryptography (MD5, SHA1)
+      
+      For each vulnerability found, report:
+      🔴/🟠/🟡/🟢 [SEVERITY] [Type] in [file]:[line]
+      Risk: [what attacker can do]
+      Fix: [exact code fix]
+      CWE: [CWE-XXX]
+
+  - name: green_scan  
+    agent: vuln-to-green-vault
+    prompt: |
+      Now scan for green/sustainability optimization opportunities.
+      
+      Use read_file to check:
+      1. Any Dockerfile — look for large base images (ubuntu, debian)
+         Recommend alpine alternatives and estimate MB savings
+      2. Any .gitlab-ci.yml or docker-compose.yml — look for 
+         region settings, suggest greener GCP regions
+      3. Any SQL queries using SELECT * — recommend specific columns
+      4. Any loops that could be optimized
+      
+      Greenest GCP regions for reference:
+      - europe-west6 (Switzerland): 29 gCO2/kWh, 100% renewable ✅ BEST
+      - northamerica-northeast1 (Montreal): 22 gCO2/kWh, 99% renewable ✅ 
+      - europe-north1 (Finland): 24 gCO2/kWh, 98% renewable ✅
+      
+      For each optimization: estimate kg CO2/month saved and $/month saved.
+
+  - name: create_report_and_mr
+    agent: vuln-to-green-vault
+    prompt: |
+      Based on the security and green scan results above, now:
+      
+      1. Create a summary report with:
+         - Total vulnerabilities by severity
+         - Total green optimizations found
+         - Estimated monthly cost savings
+         - Estimated CO2 reduction
+      
+      2. Use create_merge_request to create an MR titled:
+         "🛡️ Security Fix + 🌱 Green Optimization: [X] issues found"
+         
+         The MR description should follow this format:
+         
+         ## 🛡️ Security Fixes
+         [List each fix with severity, file, risk, and code change]
+         
+         ## 🌱 Green Optimizations  
+         [List each optimization with savings]
+         
+         ## 📊 Impact Metrics
+         | Metric | Value |
+         |--------|-------|
+         | CO2 Saved | X kg/month |
+         | Cost Saved | $X/month |
+         | Trees Equivalent | X trees/year |
+         
+         ## 🤝 Human Approval
+         Reply "Vault Approve" to auto-merge these fixes.
+         
+      3. Add a comment on this issue/MR confirming the MR was created
+         with a link to it.
